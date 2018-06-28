@@ -1,7 +1,7 @@
 package exe
 
 import (
-	"computorV1/exe/tools"
+	"computorV1/tools"
 	"errors"
 	"fmt"
 	"strconv"
@@ -20,10 +20,15 @@ type Polynome struct {
 	Right *Hand
 }
 
+type PolynomeII struct {
+	A, B, C Monome
+}
+
 func (p *Polynome) PrintPolynome() {
 	p.Left.PrintHand()
 	fmt.Printf(" = ")
 	p.Right.PrintHand()
+	fmt.Println()
 }
 
 type Hand struct {
@@ -31,13 +36,20 @@ type Hand struct {
 }
 
 func (h *Hand) PrintHand() {
-	h.Zero.PrintMonome()
-	h.One.PrintMonome()
-	h.Two.PrintMonome()
+	h.Zero.PrintMonome(false)
+	h.One.PrintMonome(true)
+	h.Two.PrintMonome(true)
 }
 
-func (m *Monome) PrintMonome() {
+func (m *Monome) PrintMonome(b bool) {
 	if m != nil {
+		if b {
+			if m.Operator < 0 {
+				fmt.Printf("- ")
+			} else {
+				fmt.Printf("+ ")
+			}
+		}
 		m.Val.Print()
 		fmt.Printf("*")
 		fmt.Printf(" X^%d ", m.Power)
