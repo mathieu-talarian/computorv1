@@ -16,12 +16,8 @@ Super struct for polynome
 considerating polynome => A + B + C = D + E + F
 */
 type Polynome struct {
-	Left  *Hand
-	Right *Hand
-}
-
-type PolynomeII struct {
-	A, B, C Monome
+	Left  Hand
+	Right Hand
 }
 
 func (p *Polynome) PrintPolynome() {
@@ -57,10 +53,10 @@ func (m *Monome) PrintMonome(b bool) {
 
 }
 
-func impl(l Monomes) (h *Hand, err error) {
-	h = &Hand{}
+func impl(l Monomes) (h Hand, err error) {
+	h = Hand{}
 	if len(l) > 3 {
-		return nil, tools.MyError("Too much values on left hand")
+		return h, tools.MyError("Too much values on left hand")
 	}
 	for k, v := range l {
 		if v.Power == 0 {
@@ -185,8 +181,8 @@ func createMonomes(hand []string) (m Monomes, err error) {
 
 func buildPolynome(l, r Monomes) (p *Polynome, err error) {
 	p = &Polynome{
-		&Hand{},
-		&Hand{},
+		Hand{},
+		Hand{},
 	}
 	if p.Left, err = impl(l); err != nil {
 		return nil, err

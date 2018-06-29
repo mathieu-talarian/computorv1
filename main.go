@@ -7,7 +7,8 @@ import (
 )
 
 func main() {
-	if p, err := parser.Start(); err != nil {
+	p, err := parser.Start()
+	if err != nil {
 		log.Fatal(err)
 	} else {
 		fmt.Printf("Parsed polynome: ")
