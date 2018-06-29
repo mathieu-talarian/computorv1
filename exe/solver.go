@@ -48,13 +48,25 @@ func (p *Polynome) Solve() (err error) {
 		return
 	}
 	polyII.Print()
-	if polyII.A.Val.Tofloat() != 0 {
-		polyII.FindDelta()
+	if polyII.FindDelta() {
 		polyII.PrintDelta()
 		polyII.FindRac()
 		polyII.PrintRac()
 	} else {
-		// TODO polynome de degre 1
+		return polyII.Level1Poly()
+	}
+	return
+}
+
+func (p *PolynomeII) Level1Poly() (err error) {
+	fmt.Println("ceci est un polynome de degre 1")
+	if p.b != 0.0 && p.c != 0.0 {
+		if float64(int(p.c/p.b)) != p.c/p.b {
+			fmt.Println("Le resultat de l'equation : \n x =", p.c, "/", p.b)
+		} else {
+			fmt.Println("Le resultat de l'equation : \n x =", p.c/p.b)
+
+		}
 	}
 	return
 }
@@ -144,11 +156,15 @@ func retRight(r *Monome) (m *Monome, err error) {
 	return
 }
 
-func (p *PolynomeII) FindDelta() {
+func (p *PolynomeII) FindDelta() bool {
 	p.a = forDelta(p.A)
 	p.b = forDelta(p.B)
 	p.c = forDelta(p.C)
+	if p.a == 0.0 {
+		return false
+	}
 	p.Delta = tools.Power(p.b, 2) - 4.0*p.a*p.c
+	return true
 }
 
 func forDelta(m *Monome) (f float64) {
