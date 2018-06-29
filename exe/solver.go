@@ -59,14 +59,16 @@ func (p *Polynome) Solve() (err error) {
 }
 
 func (p *PolynomeII) Level1Poly() (err error) {
-	fmt.Println("ceci est un polynome de degre 1")
-	if p.b != 0.0 && p.c != 0.0 {
+	if p.b != 0.0 {
+		fmt.Println("ceci est un polynome de degre 1")
 		if float64(int(p.c/p.b)) != p.c/p.b {
-			fmt.Println("Le resultat de l'equation : \n x =", p.c, "/", p.b)
+			fmt.Println("Le resultat de l'equation : \nx =", p.c, "/", p.b)
 		} else {
-			fmt.Println("Le resultat de l'equation : \n x =", p.c/p.b)
+			fmt.Println("Le resultat de l'equation : \nx =", p.c/p.b)
 
 		}
+	} else if p.b == 0.0 {
+		fmt.Println("cette `equation` n'a pas d'inconnues")
 	}
 	return
 }
