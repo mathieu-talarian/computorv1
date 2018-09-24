@@ -171,7 +171,7 @@ func (p *PolynomeII) FindDelta() bool {
 
 func forDelta(m *Monome) (f float64) {
 	if m != nil {
-		return m.Val.Tofloat()
+		return m.Val.Tofloat() * float64(m.Operator)
 	}
 	return 0.0
 }
@@ -188,8 +188,8 @@ func (p *PolynomeII) FindRac() {
 
 func (p *PolynomeII) twoRac() (ret []float64) {
 	ret = make([]float64, 2)
-	ret[0] = (p.b*-1 + tools.Sqrt(p.Delta)) / 2 * p.a
-	ret[1] = (p.b*-1 - tools.Sqrt(p.Delta)) / 2 * p.a
+	ret[0] = ((p.b + tools.Sqrt(p.Delta)) / (2 * p.a)) * -1
+	ret[1] = ((p.b - tools.Sqrt(p.Delta)) / (2 * p.a)) * -1
 	return
 }
 
