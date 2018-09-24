@@ -4,6 +4,7 @@ import (
 	"computorV1/exe/tools"
 	"errors"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -20,10 +21,57 @@ type Polynome struct {
 	Right *Hand
 }
 
+func round(num float64) int {
+	return int(num + math.Copysign(0.5, num))
+}
+
+func toFixed(num float64, precision int) float64 {
+	output := math.Pow(10, float64(precision))
+	return float64(round(num*output)) / output
+}
+
+func newVal(l, r *Monome) (m Monome) {
+	fmt.Println(l.Val, r.Val)
+	fmt.Println(float64(r.Operator))
+	m.ValF = l.Val.Tofloat()*float64(l.Operator) + r.Val.Tofloat()*float64(r.Operator)*-1.0
+	m.ValF = toFixed(m.ValF, 2)
+	m.Operator = 1
+	if m.ValF < 0.000000 {
+		m.Operator = -1
+	}
+	m.Power = l.Power
+	return
+}
+
+func newHand(l, r *Monome) *Monome {
+	if l != nil {
+		if r != nil {
+			m := newVal(l, r)
+			return &m
+		}
+		return l
+	}
+	if r != nil {
+		return r
+	}
+	return nil
+}
+
+func (p *Polynome) PrintReducedValue() {
+	fmt.Printf("Reduced form => ")
+	p.Left.Two = newHand(p.Left.Two, p.Right.Two)
+	p.Left.One = newHand(p.Left.One, p.Right.One)
+	p.Left.Zero = newHand(p.Left.Zero, p.Right.Zero)
+	p.Left.PrintHand2()
+}
+
 func (p *Polynome) PrintPolynome() {
 	p.Left.PrintHand()
 	fmt.Printf(" = ")
 	p.Right.PrintHand()
+	fmt.Println()
+	p.PrintReducedValue()
+
 }
 
 type Hand struct {
@@ -31,18 +79,30 @@ type Hand struct {
 }
 
 func (h *Hand) PrintHand() {
-	h.Zero.PrintMonome()
-	h.One.PrintMonome()
 	h.Two.PrintMonome()
+	h.One.PrintMonome()
+	h.Zero.PrintMonome()
+}
+
+func (h *Hand) PrintHand2() {
+	h.Two.PrintMonomeF()
+	h.One.PrintMonomeF()
+	h.Zero.PrintMonomeF()
+
+}
+
+func (m *Monome) PrintMonomeF() {
+	if m != nil {
+		fmt.Printf("%c%.2f * X^%d", m.Operator, m.ValF, m.Power)
+	}
 }
 
 func (m *Monome) PrintMonome() {
 	if m != nil {
-		m.Val.Print()
+		m.Val.Print(m.Operator)
 		fmt.Printf("*")
 		fmt.Printf(" X^%d ", m.Power)
 	}
-
 }
 
 func impl(l Monomes) (h *Hand, err error) {
@@ -73,6 +133,7 @@ Monome struct
 A polynome is composed by one or more monomes
 */
 type Monome struct {
+	ValF     float64
 	Val      Ints
 	Power    int
 	Operator int
@@ -91,11 +152,11 @@ func (i Ints) Tofloat() float64 {
 	return float64(i[0]) + float64(i[1])/float64(tmp)
 }
 
-func (i Ints) Print() {
+func (i Ints) Print(o int) {
 	if len(i) == 1 {
-		fmt.Printf("%d ", i[0])
+		fmt.Printf("%d ", i[0]*o)
 	} else {
-		fmt.Printf("%d.%d ", i[0], i[1])
+		fmt.Printf("%d.%d ", i[0]*o, i[1])
 	}
 }
 
