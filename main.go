@@ -14,5 +14,6 @@ func main() {
 		fmt.Printf("Parsed polynome: ")
 		p.PrintPolynome()
 	}
+	fmt.Println(p.Left.Two)
 	p.Solve()
 }

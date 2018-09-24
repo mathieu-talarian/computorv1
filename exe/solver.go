@@ -125,14 +125,14 @@ func floatToInts(f float64) (i Ints, err error) {
 	a := strings.Split(fmt.Sprintln(f), ".")
 	if len(a) >= 1 {
 		var tmp1 int
-		if tmp1, err = strconv.Atoi(a[0]); err != nil {
+		fmt.Println(a[0])
+		if tmp1, err = strconv.Atoi(string(a[0][0])); err != nil {
 			return
 		}
 		i[0] = tmp1
 		if len(a) == 2 {
 			var tmp2 int
 			t := strings.Trim(a[1], "\n")
-			fmt.Println(t)
 			if tmp2, err = strconv.Atoi(t); err != nil {
 				return
 			}
