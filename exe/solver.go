@@ -2,94 +2,11 @@ package exe
 
 import (
 	"computorV1/tools"
+	"errors"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 )
-
-type PolynomeII struct {
-	A, B, C *Monome
-	a, b, c float64
-	Delta   float64
-	Rac     interface{}
-}
-
-func (p *PolynomeII) Print() {
-	p.A.PrintMonome(false)
-	p.B.PrintMonome(true)
-	p.C.PrintMonome(true)
-	fmt.Println("= 0")
-}
-
-func (p *PolynomeII) PrintDelta() {
-	fmt.Println("Le discriminant est :", p.Delta)
-}
-
-func (p *PolynomeII) PrintRac() {
-	if s, ok := p.Rac.([]float64); ok {
-		fmt.Println("L'equation a deux solutions dans ℝ:", s[0], s[1])
-	} else if s, ok := p.Rac.(float64); ok {
-		fmt.Println("Cette equation a une solution dans ℝ: ", s)
-	} else if s, ok := p.Rac.(string); ok {
-		fmt.Println(s)
-	}
-}
-
-/*
-Solve func
-Starting point for solver
-*/
-func (p *Polynome) Solve() (err error) {
-	fmt.Printf("%+v\n", p)
-	polyII, err := p.ToPolyII()
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-	polyII.Print()
-	if polyII.FindDelta() {
-		polyII.PrintDelta()
-		polyII.FindRac()
-		polyII.PrintRac()
-	} else {
-		return polyII.Level1Poly()
-	}
-	return
-}
-
-func (p *PolynomeII) Level1Poly() (err error) {
-	if p.b != 0.0 {
-		fmt.Println("ceci est un polynome de degre 1")
-		if float64(int(p.c/p.b)) != p.c/p.b {
-			fmt.Println("Le resultat de l'equation : \nx =", p.c, "/", p.b)
-		} else {
-			fmt.Println("Le resultat de l'equation : \nx =", p.c/p.b)
-
-		}
-	} else if p.b == 0.0 {
-		fmt.Println("cette `equation` n'a pas d'inconnues")
-	}
-	return
-}
-
-/*
-ToPolyII func
-Switch to reduced polynome
-*/
-func (p *Polynome) ToPolyII() (y *PolynomeII, err error) {
-	y = new(PolynomeII)
-	if y.A, err = a(p.Left.Two, p.Right.Two); err != nil {
-		return nil, err
-	}
-	if y.B, err = a(p.Left.One, p.Right.One); err != nil {
-		return nil, err
-	}
-	if y.C, err = a(p.Left.Zero, p.Right.Zero); err != nil {
-		return nil, err
-	}
-	return
-}
 
 func a(l, r *Monome) (m *Monome, err error) {
 	m = &Monome{}
@@ -117,16 +34,16 @@ func retTwo(l, r *Monome) (m *Monome, err error) {
 	if m.Val, err = floatToInts(tmp); err != nil {
 		return
 	}
+	m.Power = l.Power
 	return
 }
 
 func floatToInts(f float64) (i Ints, err error) {
 	i = []int{0, 0}
-	a := strings.Split(fmt.Sprintln(f), ".")
+	a := strings.Split(fmt.Sprintf("%.2f", f), ".")
 	if len(a) >= 1 {
 		var tmp1 int
-		fmt.Println(a[0])
-		if tmp1, err = strconv.Atoi(string(a[0][0])); err != nil {
+		if tmp1, err = strconv.Atoi(string(a[0])); err != nil {
 			return
 		}
 		i[0] = tmp1
@@ -158,17 +75,6 @@ func retRight(r *Monome) (m *Monome, err error) {
 	return
 }
 
-func (p *PolynomeII) FindDelta() bool {
-	p.a = forDelta(p.A)
-	p.b = forDelta(p.B)
-	p.c = forDelta(p.C)
-	if p.a == 0.0 {
-		return false
-	}
-	p.Delta = tools.Power(p.b, 2) - 4.0*p.a*p.c
-	return true
-}
-
 func forDelta(m *Monome) (f float64) {
 	if m != nil {
 		return m.Val.Tofloat() * float64(m.Operator)
@@ -176,27 +82,117 @@ func forDelta(m *Monome) (f float64) {
 	return 0.0
 }
 
-func (p *PolynomeII) FindRac() {
-	if p.Delta > 0 {
-		p.Rac = p.twoRac()
-	} else if p.Delta == 0 {
-		p.Rac = p.oneRac()
-	} else {
-		p.Rac = p.noneRac()
+func impl(l Monomes) (h Hand, err error) {
+	h = Hand{}
+	if len(l) > 3 {
+		return h, tools.MyError("Too much values on left hand")
 	}
+	for k, v := range l {
+		if v.Power == 0 {
+			if v.Val.Zero() {
+				h.Zero = &l[k]
+			}
+		} else if v.Power == 1 {
+			if v.Val.Zero() {
+				h.One = &l[k]
+			}
+		} else if v.Power == 2 {
+			if v.Val.Zero() {
+				h.Two = &l[k]
+			}
+		}
+	}
+	return h, nil
 }
 
-func (p *PolynomeII) twoRac() (ret []float64) {
-	ret = make([]float64, 2)
-	ret[0] = ((p.b + tools.Sqrt(p.Delta)) / (2 * p.a)) * -1
-	ret[1] = ((p.b - tools.Sqrt(p.Delta)) / (2 * p.a)) * -1
+/*
+CreateMonome func
+*/
+func createMonome(a ...string) (m Monome, err error) {
+	var power, val string
+	var tmpStr []string
+	var tmpInt []int
+	if []byte(a[0])[0] == 'X' {
+		power = a[0]
+		val = a[1]
+	} else {
+		power = a[1]
+		val = a[0]
+	}
+	tmpStr = strings.Split(val, ".")
+	for _, v := range tmpStr {
+		var tmp int
+		if tmp, err = strconv.Atoi(v); err != nil {
+			return
+		}
+		tmpInt = append(tmpInt, tmp)
+	}
+	m.Val = tmpInt
+	if m.Val[0] < 0 {
+		m.Val[0], m.Operator = m.Val[0]*-1, -1
+	} else {
+		m.Operator = 1
+	}
+	if m.Power, err = findPower(power); err != nil {
+		return
+	}
 	return
 }
 
-func (p *PolynomeII) oneRac() (ret float64) {
-	return (p.b * -1) / (2 * p.a)
+func createMonomes(hand []string) (m Monomes, err error) {
+	for k, v := range hand {
+		if v == "*" {
+			var monome Monome
+			if monome, err = createMonome(hand[k-1], hand[k+1]); err != nil {
+				return
+			}
+			m = append(m, monome)
+		}
+	}
+	return
 }
 
-func (p *PolynomeII) noneRac() (ret string) {
-	return "This polynome does not have solution on ℝ"
+func buildPolynome(l, r Monomes) (p *Polynome, err error) {
+	p = &Polynome{
+		Hand{},
+		Hand{},
+	}
+	if p.Left, err = impl(l); err != nil {
+		return nil, err
+	}
+	if p.Right, err = impl(r); err != nil {
+		return nil, err
+	}
+	return
+}
+
+/*
+CreatePolynome func
+Way to create polynome from 2 strings from parser
+*/
+func CreatePolynome(lefthand, righthand []string) (p *Polynome, err error) {
+	var rightMonomes, leftMonomes Monomes
+	if rightMonomes, err = createMonomes(righthand); err != nil {
+		return
+	}
+	if leftMonomes, err = createMonomes(lefthand); err != nil {
+		return
+	}
+	return buildPolynome(leftMonomes, rightMonomes)
+}
+
+func findPower(power string) (p int, err error) {
+	if []byte(power)[0] != 'X' {
+		return 0, errors.New(fmt.Sprintln("Issue with power", power))
+	}
+	tmp := strings.Split(power, "^")
+	if len(tmp) <= 1 {
+		err = tools.MyError("Issue with power", power)
+	}
+	if tmp[0] == "X" {
+		p, err = strconv.Atoi(tmp[1])
+	} else {
+		p, err = strconv.Atoi(tmp[0])
+	}
+	return
 }
