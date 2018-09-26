@@ -12,8 +12,7 @@ func main() {
 		log.Fatal(err)
 	} else {
 		fmt.Printf("Parsed polynome: ")
-		p.PrintPolynome()
+		// p.PrintPolynome()
 	}
-	fmt.Println(p.Left.Two)
 	p.Solve()
 }

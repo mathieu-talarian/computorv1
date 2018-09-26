@@ -26,6 +26,9 @@ type IMonome interface {
 
 func (m *Monome) PrintMonome(b bool) {
 	if m != nil {
+		if !b && m.Operator < 0 {
+			fmt.Printf("-")
+		}
 		if b {
 			if m.Operator < 0 {
 				fmt.Printf("- ")

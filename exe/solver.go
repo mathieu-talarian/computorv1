@@ -2,8 +2,8 @@ package exe
 
 import (
 	"computorV1/tools"
-	"errors"
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -22,20 +22,64 @@ func a(l, r *Monome) (m *Monome, err error) {
 	return nil, tools.MyError("Issue while converting Initial polynome to reduced polynome")
 }
 
+func getNType(v interface{}) reflect.Type {
+	switch v.(type) {
+	case float64:
+		return reflect.TypeOf(v.(float64))
+	case int:
+		return reflect.TypeOf(v.(int))
+	}
+	return reflect.TypeOf(nil)
+}
+
+func computeVals(lVal interface{}, lOp int, rVal interface{}, rOp int) interface{} {
+	a := getNType(lVal).Name()
+	b := getNType(rVal).Name()
+	if a == "float64" && b == "float64" {
+		return (lVal.(float64) * float64(lOp)) + (rVal.(float64) * float64(rOp*-1))
+	}
+	if a != "float64" && b == "float64" {
+		return float64(lVal.(int)*lOp) + (rVal.(float64) * float64(rOp*-1))
+	}
+	if a == "float64" && b != "float64" {
+		return (lVal.(float64) * float64(lOp)) + float64(rVal.(int)*rOp*-1)
+	}
+	if a != "float64" && b != "float64" {
+		return (lVal.(int) * lOp) + (rVal.(int) * rOp * -1)
+	}
+	return 0.0
+}
+
 func retTwo(l, r *Monome) (m *Monome, err error) {
 	m = &Monome{}
-	tmp := l.Val.Tofloat()*float64(l.Operator) + r.Val.Tofloat()*float64(r.Operator*-1)
-	fmt.Println(tmp)
-	if tmp < 0.0 {
-		m.Operator = -1
-	} else {
+	tmp := computeVals(l.Val.ToNumber(), l.Operator, r.Val.ToNumber(), r.Operator)
+	if t, ok := tmp.(float64); ok {
 		m.Operator = 1
+		if t < 0.0 {
+			m.Operator = -1
+			t *= -1
+		}
+		if m.Val, err = floatToInts(t); err != nil {
+			return
+		}
+		m.Power = l.Power
+	} else if t, ok := tmp.(int); ok {
+		m.Operator = 1
+		if t < 0 {
+			m.Operator = -1
+			t *= -1
+		}
+		if m.Val, err = IntToInts(t); err != nil {
+			return
+		}
+		m.Power = l.Power
 	}
-	if m.Val, err = floatToInts(tmp); err != nil {
-		return
-	}
-	m.Power = l.Power
 	return
+}
+
+func IntToInts(f int) (i Ints, err error) {
+	i = append(i, f)
+	return i, nil
 }
 
 func floatToInts(f float64) (i Ints, err error) {
@@ -77,7 +121,12 @@ func retRight(r *Monome) (m *Monome, err error) {
 
 func forDelta(m *Monome) (f float64) {
 	if m != nil {
-		return m.Val.Tofloat() * float64(m.Operator)
+		switch m.Val.ToNumber().(type) {
+		case int:
+			return float64(m.Val.ToNumber().(int) * m.Operator)
+		case float64:
+			return m.Val.ToNumber().(float64) * float64(m.Operator)
+		}
 	}
 	return 0.0
 }
@@ -183,7 +232,7 @@ func CreatePolynome(lefthand, righthand []string) (p *Polynome, err error) {
 
 func findPower(power string) (p int, err error) {
 	if []byte(power)[0] != 'X' {
-		return 0, errors.New(fmt.Sprintln("Issue with power", power))
+		return 0, fmt.Errorf("Issue with power %s", power)
 	}
 	tmp := strings.Split(power, "^")
 	if len(tmp) <= 1 {

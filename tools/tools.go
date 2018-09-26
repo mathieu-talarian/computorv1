@@ -1,7 +1,6 @@
 package tools
 
 import (
-	"errors"
 	"fmt"
 )
 
@@ -10,7 +9,7 @@ MyError function
 just a tool for writing errors
 */
 func MyError(str ...string) error {
-	return errors.New(fmt.Sprintln(str))
+	return fmt.Errorf("%s", str)
 }
 
 func Power(x float64, y int) float64 {

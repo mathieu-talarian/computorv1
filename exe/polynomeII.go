@@ -32,14 +32,14 @@ func (p *PolynomeII) Print() {
 }
 
 func (p *PolynomeII) PrintDelta() {
-	fmt.Println("Le discriminant est :", p.Delta)
+	fmt.Printf("Le discriminant est : %.2f\n", p.Delta)
 }
 
 func (p *PolynomeII) PrintRac() {
 	if s, ok := p.Rac.([]float64); ok {
-		fmt.Println("L'equation a deux solutions dans ℝ:", s[0], s[1])
+		fmt.Printf("L'equation a deux solutions dans ℝ: %.2f - %.2f\n", s[0], s[1])
 	} else if s, ok := p.Rac.(float64); ok {
-		fmt.Println("Cette equation a une solution dans ℝ: ", s)
+		fmt.Printf("Cette equation a une solution dans ℝ: %.2f\n", s)
 	} else if s, ok := p.Rac.(string); ok {
 		fmt.Println(s)
 	}
@@ -52,7 +52,6 @@ func (p *PolynomeII) Level1Poly() (err error) {
 			fmt.Println("Le resultat de l'equation : \nx =", p.c, "/", p.b)
 		} else {
 			fmt.Println("Le resultat de l'equation : \nx =", p.c/p.b)
-
 		}
 	} else if p.b == 0.0 {
 		fmt.Println("cette `equation` n'a pas d'inconnues")
@@ -61,14 +60,12 @@ func (p *PolynomeII) Level1Poly() (err error) {
 }
 
 func (p *PolynomeII) FindDelta() bool {
-	fmt.Println(p.A)
 	p.a = forDelta(p.A)
 	p.b = forDelta(p.B)
 	p.c = forDelta(p.C)
 	if p.a == 0.0 {
 		return false
 	}
-	fmt.Println(p.a, p.b, p.c)
 	p.Delta = tools.Power(p.b, 2) - (4.0 * p.a * p.c)
 	return true
 }
@@ -78,6 +75,9 @@ func (p *PolynomeII) FindRac() {
 		p.Rac = p.twoRac()
 	} else if p.Delta == 0 {
 		p.Rac = p.oneRac()
+		if p.Rac.(float64) == -0 {
+			p.Rac = p.Rac.(float64) * -1.0
+		}
 	} else {
 		p.Rac = p.noneRac()
 	}
@@ -96,4 +96,8 @@ func (p *PolynomeII) oneRac() (ret float64) {
 
 func (p *PolynomeII) noneRac() (ret string) {
 	return "This polynome does not have solution on ℝ"
+}
+
+func NewPolyII() *PolynomeII {
+	return &PolynomeII{}
 }

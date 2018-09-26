@@ -8,18 +8,18 @@ import (
 
 type Ints []int
 
-type IInts interface {
-	ToFloat()
+type iInts interface {
+	ToNimber()
 	Print()
 	Zero()
 }
 
-func (i Ints) Tofloat() float64 {
+func (i Ints) ToNumber() interface{} {
 	if len(i) == 0 {
-		return 0
+		return int(0)
 	}
 	if len(i) == 1 {
-		return float64(i[0])
+		return int(i[0])
 	}
 	tmp := tools.Power(10, len(strconv.Itoa(i[1])))
 	return float64(i[0]) + float64(i[1])/float64(tmp)
@@ -34,5 +34,11 @@ func (i Ints) Print() {
 }
 
 func (i Ints) Zero() bool {
-	return i.Tofloat() != float64(0)
+	switch i.ToNumber().(type) {
+	case int:
+		return i.ToNumber().(int) != 0
+	case float64:
+		return i.ToNumber().(float64) != 0.0
+	}
+	return false
 }

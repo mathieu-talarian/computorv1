@@ -35,7 +35,6 @@ Solve func
 Starting point for solver
 */
 func (p *Polynome) Solve() (err error) {
-	fmt.Printf("%+v\n", p)
 	polyII, err := p.ToPolyII()
 	if err != nil {
 		log.Fatal(err)
@@ -57,11 +56,10 @@ ToPolyII func
 Switch to reduced polynome
 */
 func (p *Polynome) ToPolyII() (y *PolynomeII, err error) {
-	y = new(PolynomeII)
+	y = NewPolyII()
 	if y.A, err = a(p.Left.Two, p.Right.Two); err != nil {
 		return nil, err
 	}
-	fmt.Printf("%+v\n", y.A)
 	if y.B, err = a(p.Left.One, p.Right.One); err != nil {
 		return nil, err
 	}
